@@ -1,0 +1,72 @@
+name: MarsRecruit
+
+entities:
+  User:
+    authenticable: true
+    properties:
+      - name
+      - name: email
+        type: email
+      - name: skills
+        type: text
+        helpText: 'List your relevant skills (e.g., engineering, medicine, botany).'
+      - name: motivation
+        type: richText
+        helpText: 'Why do you want to go to Mars?'
+      - name: role
+        type: choice
+        options:
+          values: [admin, recruit]
+        default: recruit
+    policies:
+      create:
+        - access: admin
+      read:
+        - access: restricted
+          allow: User
+          condition: self
+      update:
+        - access: restricted
+          allow: User
+          condition: self
+      delete:
+        - access: admin
+      signup:
+        - access: public
+
+  Application:
+    properties:
+      - name: status
+        type: choice
+        options:
+          values: [Pending, Under Review, Approved, Rejected]
+        default: Pending
+      - name: essay
+        type: richText
+        helpText: 'Please provide a detailed essay on your suitability for the mission.'
+      - name: submissionDate
+        type: timestamp
+    belongsTo:
+      - { name: applicant, entity: User }
+    policies:
+      create:
+        - access: restricted
+          allow: User
+      read:
+        - access: restricted
+          allow: User
+          condition: self # User can see their own application
+        - access: admin # Admin can see all applications
+      update:
+        - access: admin # Only admin can change status
+      delete:
+        - access: admin
+
+
+# Health check endpoint for connection testing
+endpoints:
+  health:
+    path: /api/health
+    method: GET
+    policies: []
+    handler: healthCheck
